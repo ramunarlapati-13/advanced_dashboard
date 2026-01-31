@@ -1,6 +1,6 @@
 # Admin Sentinel Dashboard
 
-A high-security, hardware-tethered analytical dashboard with multi-gate authentication.
+A high-security, hardware-tethered analytical dashboard with multi-gate authentication and unified multi-database intelligence.
 
 ## 🛡️ Security Features
 
@@ -10,7 +10,23 @@ A high-security, hardware-tethered analytical dashboard with multi-gate authenti
 3. **Stealth Gate**: Hidden security key input
 4. **MFA Gate**: Google Authenticator TOTP
 
-## 🚀 Quick Start
+## 🚀 Key Innovation: Multi-Platform Intelligence
+
+The dashboard now provides a unified "Command Center" view for multiple independent platforms:
+
+- **Unified Intelligence**: Real-time data aggregation from **Zest Academy** (Firebase) and **Zestfolio** (Realtime DB).
+- **Common User Detection**: Advanced filtering that identifies users registered across both platforms.
+- **Global Insights**: High-level analytics showing total user growth, platform health, and system status across the entire ecosystem.
+
+## 📊 Features
+
+- **Global Overview**: Combined analytics with dynamic growth charts using `react-chartjs-2`.
+- **Interactive Sidebar**: Premium hover-expandable dropdowns for Global Insights and Database management.
+- **User Directory**: Centralized list of all users with CSV export and powerful search/filter capabilities.
+- **Micro-Animations**: Fluid UI interactions built with `Framer Motion` for a high-end feel.
+- **Clickable Breadcrumbs**: Fast "Home" navigation via the header and sidebar branding.
+
+## ⚙️ Quick Start
 
 ### 1. Install Dependencies
 ```bash
@@ -26,7 +42,7 @@ Scan the generated `mfa-qr.png` with Google Authenticator.
 ### 3. Configure Environment
 Create `.env.local`:
 ```env
-# Firebase (Optional - currently using mock auth)
+# Firebase Configuration
 NEXT_PUBLIC_FIREBASE_API_KEY=your_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project
@@ -52,13 +68,6 @@ Visit `http://localhost:3000/login`
 - **Stealth Key**: `sentinel-alpha` (hover over gap between password and login button)
 - **MFA Code**: `123456` (or use real code from Google Authenticator)
 
-## 📊 Features
-
-- **Global Insights**: Real-time analytics dashboard
-- **User Directory**: Searchable user table with CSV export
-- **Hardware Lock**: Automatic lockout on unauthorized hardware
-- **Dark Theme**: "Command Center" aesthetic with neon accents
-
 ## 🔧 Hardware Lock
 
 Your machine ID: `4c990fe24d101b9656c59070518151225dc11da4d4052436aa28bd3f5`
@@ -67,26 +76,11 @@ To update for a new machine:
 1. Run `npx node-machine-id`
 2. Update `lib/security/config.ts` with the new ID
 
-## 📁 Project Structure
-
-```
-├── app/
-│   ├── login/          # Authentication page
-│   ├── page.tsx        # Main dashboard
-│   └── layout.tsx      # Root layout with hardware check
-├── components/
-│   └── UserDirectory.tsx
-├── lib/
-│   ├── firebase/       # Firebase configuration
-│   └── security/       # Hardware validation
-└── scripts/
-    └── generate-mfa.js # MFA setup utility
-```
-
 ## 🎨 Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **Styling**: Tailwind CSS v4
+- **Animations**: Framer Motion
 - **Security**: otplib, node-machine-id
 - **Charts**: Chart.js, react-chartjs-2
-- **Animations**: Framer Motion
+- **Database**: Firebase (Firestore & RTDB)
