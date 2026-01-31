@@ -3,6 +3,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getDatabase } from "firebase/database"; // Added RTDB
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -12,14 +13,24 @@ const firebaseConfig = {
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
     messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
-// We use getApps() to ensure we don't initialize duplicate instances in Next.js (hot reload prevention)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const rtdb = getDatabase(app); // Export RTDB
 export const storage = getStorage(app);
+
+// Analytics can only differ based on environment (client vs server)
+let analytics;
+if (typeof window !== "undefined") {
+    import("firebase/analytics").then(({ getAnalytics }) => {
+        analytics = getAnalytics(app);
+    });
+}
+export { analytics };
 
 export default app;

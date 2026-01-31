@@ -31,12 +31,38 @@ export default function LoginPage() {
             // Simulate API delay
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
-            // 1. Check Primary Credentials (Gate 1)
-            // await signInWithEmailAndPassword(auth, email, password);
-            // For now, mock check
-            if (email !== "admin@sentinel.com" || password !== "password") {
-                // In real app, let Firebase handle invalid email/pass
-                // throw new Error("Invalid Credentials");
+            // 0. Hardware ID Check (Gate 0)
+            // In a real scenario, this would comes from a persistent device fingerprint or local storage token
+            // that was installed during "Dev Registration".
+            const deviceId = localStorage.getItem("zest_hw_id");
+            const allowedId = process.env.NEXT_PUBLIC_ALLOWED_HW_ID;
+
+            // If strict mode is on, we block unknown devices. 
+            // For now, if no ID is found, we might warn or block.
+            if (deviceId !== allowedId) {
+                // For dev convenience, if they provide the ID in the password field with a prefix, allow registration
+                if (password.startsWith("REG:")) {
+                    const newId = password.split("REG:")[1];
+                    if (newId === allowedId) {
+                        localStorage.setItem("zest_hw_id", newId);
+                        // Continue to auth...
+                    } else {
+                        throw new Error("ACCESS DENIED: INVALID HARDWARE ID");
+                    }
+                } else {
+                    // throw new Error("UNAUTHORIZED TERMINAL: HARDWARE MISMATCH");
+                    console.warn("Hardware ID mismatch. Proceeding for Dev, but in Prod this blocks.");
+                }
+            }
+
+            // 2. Check Primary Credentials (Gate 1)
+            // Using Server Action to keep env vars secure
+            // Dynamically import to ensure it works with next build/dev refresh cycles appropriately
+            const { verifyCredentials } = await import("@/app/actions");
+            const isValid = await verifyCredentials(email, password);
+
+            if (!isValid) {
+                throw new Error("Invalid Credentials or Unauthorized Email");
             }
 
             // If passed, move to MFA (Gate 4)
@@ -54,19 +80,30 @@ export default function LoginPage() {
         setError("");
 
         try {
-            // Mock MFA Check
-            await new Promise((resolve) => setTimeout(resolve, 800));
+            // 1. Verify TOTP (Simulated or Real)
             if (mfaCode !== "123456") {
+                // In prod: verify against API
                 throw new Error("Invalid TOTP Code");
             }
 
-            // Success! Set session and redirect
+            // 2. Firebase Authentication (The "Key" to the Database)
+            // Now we trigger the actual Firebase Login to get the token
+            const { getAuth, GoogleAuthProvider, signInWithPopup } = await import("firebase/auth");
+            const { default: app } = await import("@/lib/firebase/config");
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
+
+            // We explicitly ask for login now that they passed the gates
+            await signInWithPopup(auth, provider);
+
+            // 3. Set Session & Redirect
             if (typeof window !== 'undefined') {
                 sessionStorage.setItem("admin_session", "active");
             }
             router.push("/");
         } catch (err: any) {
-            setError(err.message);
+            console.error(err);
+            setError(err.message || "Authentication Failed");
         } finally {
             setIsLoading(false);
         }
@@ -160,7 +197,7 @@ export default function LoginPage() {
                         <div className="text-center space-y-4">
                             <p className="text-sm text-gray-400">Enter TOTP from Authenticator Device</p>
 
-                            <div className="flex justify-center">
+                            <div className="flex justify-center flex-col items-center">
                                 <input
                                     type="text"
                                     maxLength={6}
@@ -170,6 +207,7 @@ export default function LoginPage() {
                                     placeholder="000000"
                                     autoFocus
                                 />
+                                <p className="text-[10px] text-gray-600 mt-2 font-mono">DEV HINT: CODE IS 123456</p>
                             </div>
                         </div>
 
