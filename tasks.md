@@ -1,0 +1,22 @@
+
+- [x] **Project Setup** <!-- id: 0 -->
+    - [x] Initialize Next.js app <!-- id: 1 -->
+    - [x] Install dependencies <!-- id: 2 -->
+    - [x] Configure `next.config.ts` <!-- id: 3 -->
+- [x] **Security Implementation** <!-- id: 4 -->
+    - [x] Implement `lib/hardware.ts` & Hardware Gate (Gate 2) <!-- id: 5 -->
+    - [x] Create Login Page with Firebase Auth (Gate 1) <!-- id: 6 -->
+    - [x] Implement Stealth Input Component (Gate 3) <!-- id: 7 -->
+    - [x] Implement TOTP/MFA Logic (Gate 4) <!-- id: 8 -->
+    - [x] Create MFA Setup Script <!-- id: 21 -->
+- [ ] **Dashboard UI** <!-- id: 9 -->
+    - [x] Setup Global CSS & Tailwind Theme (Dark/Neon) <!-- id: 10 -->
+    - [x] Create Dashboard Layout <!-- id: 11 -->
+    - [ ] Build "User Directory" Component <!-- id: 13 -->
+- [ ] **Data & Analytics** <!-- id: 14 -->
+    - [ ] Integrate Firebase Data Fetching <!-- id: 15 -->
+    - [ ] Implement Charts (Real-time, Demographics) <!-- id: 16 -->
+    - [ ] Implement File Browser (Storage) <!-- id: 17 -->
+- [ ] **Final Polish** <!-- id: 18 -->
+    - [ ] Export to CSV/PDF <!-- id: 19 -->
+    - [ ] Final Security Review <!-- id: 20 -->

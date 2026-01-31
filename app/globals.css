@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #050510;
+  --color-surface: #0f0f1a;
+  --color-surface-hover: #1a1a2e;
+  
+  --color-primary: #00f0ff;
+  --color-primary-glow: rgba(0, 240, 255, 0.5);
+  
+  --color-secondary: #ff003c;
+  --color-secondary-glow: rgba(255, 0, 60, 0.5);
+  
+  --color-text-main: #e0e0e0;
+  --color-text-dim: #a0a0b0;
+  
+  --font-mono: "Courier New", Courier, monospace;
+}
+
+:root {
+  --background: var(--color-background);
+  --foreground: var(--color-text-main);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans, "Inter", sans-serif);
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar for "Command Center" feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface); 
+}
+::-webkit-scrollbar-thumb {
+  background: #333; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary); 
+}
+
+/* Utility classes for Glassmorphism */
+.glass-panel {
+  background: rgba(15, 15, 26, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.neon-border {
+  box-shadow: 0 0 10px var(--color-primary-glow), inset 0 0 5px var(--color-primary-glow);
+  border: 1px solid var(--color-primary);
+}
+
+.neon-text {
+  text-shadow: 0 0 5px var(--color-primary-glow);
+  color: var(--color-primary);
+}
+
+.error-text {
+    text-shadow: 0 0 5px var(--color-secondary-glow);
+    color: var(--color-secondary);
+}
