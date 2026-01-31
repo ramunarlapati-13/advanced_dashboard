@@ -5,6 +5,7 @@
 // List of authorized hardware IDs
 export const AUTHORIZED_HARDWARE_IDS = [
     "4c990fe24d101b9656c590705181f3e01f2eda4d4052436aa28bd3f51225dc11", // Your ACTUAL Machine ID (from terminal)
+    "498bb799c73d1eb6df47e7b9fb091b0ba22155fdcd53851beb83338bae362e10", // Added ID
     // Add your co-developer's hardware ID below:
     // "PASTE_CO_DEVELOPER_MACHINE_ID_HERE",
 ];
