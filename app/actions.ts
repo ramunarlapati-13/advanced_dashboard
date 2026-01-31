@@ -23,11 +23,25 @@ export async function verifyCredentials(email: string, pass: string): Promise<bo
  * Fetches the list of multiple users from Firebase Authentication.
  * Requires FIREBASE_PRIVATE_KEY in env.
  */
-import { getAdminAuth } from "@/lib/firebase/admin";
+import { getAdminAuth, getZestfolioAdminAuth } from "@/lib/firebase/admin";
 
-export async function getAuthUsers() {
+export async function getAuthUsers(project: string = 'academy') {
     try {
-        const auth = await getAdminAuth();
+        let auth;
+
+        if (project === 'zestfolio') {
+            auth = await getZestfolioAdminAuth();
+            if (!auth) {
+                return {
+                    success: false,
+                    error: "ZESTFOLIO_SERVICE_ACCOUNT_MISSING",
+                    _debug: "Add ZESTFOLIO_CLIENT_EMAIL and ZESTFOLIO_PRIVATE_KEY to .env.local"
+                };
+            }
+        } else {
+            auth = await getAdminAuth();
+        }
+
         const listUsersResult = await auth.listUsers(100); // Batch size 100
 
         // Serialize for client (remove metadata methods)
@@ -53,8 +67,39 @@ export async function getAuthUsers() {
         // Ensure we are returning a plain object by rigorous cloning if needed, 
         // but the map above should be sufficient.
         return { success: true, users: JSON.parse(JSON.stringify(users)) };
+        return { success: true, users: JSON.parse(JSON.stringify(users)) };
     } catch (error: any) {
         console.error("Failed to list auth users:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getCMSContent(collectionName: string, project: string = 'academy') {
+    try {
+        let db;
+        if (project === 'zestfolio') {
+            // Dynamic import to avoid cycles if any
+            const { initZestfolioAdmin } = await import("@/lib/firebase/admin");
+            const { getFirestore } = await import("firebase-admin/firestore");
+
+            const app = initZestfolioAdmin();
+            if (!app) throw new Error("ZESTFOLIO_ADMIN_NOT_CONFIGURED");
+            db = getFirestore(app);
+        } else {
+            const { initAdmin } = await import("@/lib/firebase/admin");
+            const { getFirestore } = await import("firebase-admin/firestore");
+            initAdmin();
+            db = getFirestore();
+        }
+
+        const snapshot = await db.collection(collectionName).get();
+        const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Serialize dates
+        const serialized = JSON.parse(JSON.stringify(docs));
+        return { success: true, data: serialized };
+    } catch (error: any) {
+        console.error(`Failed to fetch CMS content (${collectionName}):`, error);
         return { success: false, error: error.message };
     }
 }

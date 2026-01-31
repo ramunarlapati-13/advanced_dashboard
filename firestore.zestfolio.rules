@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- AUTH HELPERS ---
+    
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email != null && (
+        request.auth.token.email == 'zestacademyonline@gmail.com' ||
+        request.auth.token.email == 'zestacademy@rsmk.co.in' || 
+        request.auth.token.email == 'ramunarlapati@gmail.com'
+      );
+    }
+    
+    // Allow any authenticated user (including Dashboard/Anonymous) to Read
+    function isDashboardOrAdmin() {
+      return request.auth != null; 
+    }
+
+    // --- COLLECTIONS ---
+
+    // 1. Users
+    match /users/{userId} {
+      allow read: if isDashboardOrAdmin();
+      allow write: if isAdmin() || request.auth.uid == userId;
+    }
+    
+    // 2. Content CMS Collections
+    match /projects/{docId} { allow read, write: if isDashboardOrAdmin(); }
+    match /blogs/{docId} { allow read, write: if isDashboardOrAdmin(); }
+    match /experience/{docId} { allow read, write: if isDashboardOrAdmin(); }
+    match /testimonials/{docId} { allow read, write: if isDashboardOrAdmin(); }
+    match /articles/{docId} { allow read, write: if isDashboardOrAdmin(); }
+    
+    // 3. Portfolios
+    match /portfolios/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() || request.auth.uid == docId; 
+    }
+
+    // 4. Catch-All (Safety Net for other collections)
+    match /{path=**} {
+      allow read, write: if isAdmin(); // Strict default
+    }
+  }
+}
