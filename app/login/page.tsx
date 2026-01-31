@@ -20,7 +20,6 @@ export default function LoginPage() {
     // Form States
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [stealthKey, setStealthKey] = useState(""); // The hidden input
     const [mfaCode, setMfaCode] = useState("");
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -132,19 +131,6 @@ export default function LoginPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="w-full bg-black/40 border border-white/10 rounded p-3 text-white focus:outline-none focus:border-blue-500 focus:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all font-mono"
                                     placeholder="••••••••••••"
-                                />
-                            </div>
-
-                            {/* GATE 3: STEALTH INPUT */}
-                            {/* Invisible input, usually identified by tab order or exact position */}
-                            <div className="relative group h-2 overflow-hidden opacity-0 hover:opacity-100 transition-opacity duration-700">
-                                <input
-                                    type="password"
-                                    value={stealthKey}
-                                    onChange={(e) => setStealthKey(e.target.value)}
-                                    className="w-full bg-transparent border-none text-xs text-gray-800 focus:ring-0 focus:outline-none text-center tracking-[0.5em]"
-                                    placeholder="SECURITY KEY"
-                                    autoComplete="off"
                                 />
                             </div>
                         </div>
