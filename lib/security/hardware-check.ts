@@ -9,25 +9,8 @@ import { AUTHORIZED_HARDWARE_IDS } from './config';
  */
 export function validateHardwareEnvironment(): { authorized: boolean; currentId: string } {
     try {
-        // Bypass for Vercel / CI Environments
-        if (process.env.VERCEL || process.env.CI) {
-            console.log("[Security] Vercel/CI environment detected. Bypassing Hardware Lock.");
-            return { authorized: true, currentId: "CLOUD_ENV" };
-        }
-
         // We catch errors because machineIdSync might fail on some environments (e.g. edge runtime)
-        let currentId = "UNKNOWN";
-        try {
-            currentId = machineIdSync();
-        } catch (machineIdError) {
-            console.warn("[Security] machine-id generation failed (likely CI/Cloud env), using fallback.", machineIdError);
-            // If we are strictly in Vercel/CI (checked above), distinct failure is fine. 
-            // If checking above failed to detect environment, we assume safety fallback here for cloud deployment stability.
-            if (process.env.VERCEL || process.env.CI || process.env.NODE_ENV === 'production') {
-                return { authorized: true, currentId: "FALLBACK_CLOUD_ID" };
-            }
-            throw machineIdError; // Re-throw if local dev
-        }
+        const currentId = machineIdSync();
 
         // Debug log (remove in production or keep for audit)
         console.log(`[Security] Checking Hardware ID: ${currentId}`);
