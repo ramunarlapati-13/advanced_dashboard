@@ -9,6 +9,12 @@ import { AUTHORIZED_HARDWARE_IDS } from './config';
  */
 export function validateHardwareEnvironment(): { authorized: boolean; currentId: string } {
     try {
+        // Bypass for Vercel / CI Environments
+        if (process.env.VERCEL || process.env.CI) {
+            console.log("[Security] Vercel/CI environment detected. Bypassing Hardware Lock.");
+            return { authorized: true, currentId: "CLOUD_ENV" };
+        }
+
         // We catch errors because machineIdSync might fail on some environments (e.g. edge runtime)
         const currentId = machineIdSync();
 
