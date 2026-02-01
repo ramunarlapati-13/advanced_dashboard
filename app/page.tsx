@@ -34,6 +34,7 @@ export default function Dashboard() {
   const [zestfolioUsers, setZestfolioUsers] = useState<any[]>([]);
   const [commonUserCount, setCommonUserCount] = useState<number>(0);
   const [commonUsers, setCommonUsers] = useState<any[]>([]);
+  const [portfolioCount, setPortfolioCount] = useState<number>(0);
 
   // Monitor Auth State
   useEffect(() => {
@@ -48,16 +49,21 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchTotalUsers = async () => {
       try {
-        const { getAuthUsers } = await import("./actions");
+        const { getAuthUsers, getCollectionCount } = await import("./actions");
 
         // Fetch from both databases
-        const [academyResult, zestfolioResult] = await Promise.all([
+        const [academyResult, zestfolioResult, portfoliosResult] = await Promise.all([
           getAuthUsers('academy'),
-          getAuthUsers('zestfolio')
+          getAuthUsers('zestfolio'),
+          getCollectionCount('portfolios', 'zestfolio')
         ]);
 
         const academyCount = academyResult.success ? academyResult.users?.length || 0 : 0;
         const zestfolioCount = zestfolioResult.success ? zestfolioResult.users?.length || 0 : 0;
+
+        if (portfoliosResult.success) {
+          setPortfolioCount(portfoliosResult.count || 0);
+        }
 
         const combinedUsers = [...(academyResult.users || []), ...(zestfolioResult.users || [])];
         setAllUsers(combinedUsers);
@@ -158,7 +164,12 @@ export default function Dashboard() {
               <Activity size={18} className="text-purple-400" />
               User Growth Analytics
             </h3>
-            <AnalyticsCharts users={allUsers} />
+            <AnalyticsCharts
+              users={academyUsers}
+              secondaryUsers={zestfolioUsers}
+              primaryLabel="Academy Users"
+              secondaryLabel="Zestfolio Users"
+            />
           </div>
         </div>
       );
@@ -239,7 +250,7 @@ export default function Dashboard() {
             <div className="space-y-6 animate-in fade-in duration-500">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <StatCard label="Zestfolio Users" value={zestfolioUsers.length.toString()} color="green" />
-                <StatCard label="Media Assets" value="2.4GB" color="purple" />
+                <StatCard label="Created Portfolios" value={portfolioCount.toString()} color="purple" />
                 <StatCard label="Integration Status" value="ACTIVE" color="blue" />
               </div>
 

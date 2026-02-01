@@ -26,6 +26,68 @@ The dashboard now provides a unified "Command Center" view for multiple independ
 - **Micro-Animations**: Fluid UI interactions built with `Framer Motion` for a high-end feel.
 - **Clickable Breadcrumbs**: Fast "Home" navigation via the header and sidebar branding.
 
+## 📂 Project Structure & Workflow
+
+### 🏗️ Core Directory Structure
+
+- **`app/`**: Next.js App Router (Main Application Logic)
+    - **`login/page.tsx`**: The entry point. Handles the 5-Gate Authentication process.
+    - **`page.tsx`**: The Main Dashboard. Orchestrates the global view, sidebar navigation, and dynamic component rendering.
+    - **`actions.ts`**: Secure Server Actions. Handles sensitive operations like Credential verification, MFA validation (`otplib`), and Admin Access checks hidden from the client.
+- **`lib/`**: Shared Utilities & Configuration
+    - **`firebase/`**: Contains separate configurations for **Zest Academy** (`config.ts`), **Zestfolio** (`zestfolio.ts`), and the Admin SDK (`admin.ts`) for server-side operations.
+    - **`security/`**: Hardware ID tethering logic (`hardware-check.ts`) and allowlists.
+- **`components/`**: Reusable UI Elements
+    - **`UserDirectory.tsx`**: Advanced user table with search, filter, and CSV export.
+    - **`AnalyticsCharts.tsx`**: Visualizations for user growth and platform metrics.
+- **`scripts/`**: Maintenance Utilities
+    - `generate-mfa.js`: Generates QR codes for new Admin encryptions.
+
+### �️ Dashboard UI Hierarchy
+```text
+Layout (Root)
+├── Sidebar (Navigation)
+│   ├── Branding (Zest Sentinel)
+│   ├── Main Menu
+│   │   ├── Dashboard (Overview)
+│   │   ├── User Management (Academy/Zestfolio)
+│   │   ├── Global Insights (Analytics)
+│   │   └── System Health
+│   └── User Profile (Bottom)
+└── Main Content Area
+    ├── Header
+    │   ├── Breadcrumbs (Navigation Path)
+    │   ├── Global Search Bar
+    │   └── Quick Actions (Notifications, Theme, Profile)
+    └── Dynamic View Container
+        ├── 📊 Dashboard View (Default)
+        │   ├── Stats Grid (Key Metrics: Users, Portfolios, Status)
+        │   └── Analytics Panel
+        │       └── AnalyticsCharts (Line, Pie, Bar + Export Tools)
+        ├── 👥 User Directory View
+        │   └── Advanced Table (Search, Filter, CSV Export)
+        └── ⚡ Activity Feed View
+            └── Real-time Event Stream
+```
+
+### �🔄 System Workflow
+
+#### 1. Authentication Flow (The "Sentinel" Gate)
+The system employs a rigorous multi-step access protocol:
+1.  **User Visits `/login`**:
+2.  **Gate 1 (Hardware)**: System silently checks physical Machine ID. If mismatch -> **Block**.
+3.  **Gate 2 (Credentials)**: Checks Email/Password against Server Action allowlist.
+4.  **Gate 3 (MFA)**: Validates TOTP code using `otplib` (Real Google Authenticator).
+5.  **Gate 4 (Authorization)**: Post-login, strict server-side check ensuring the authenticated Google Account is in the `ADMIN_EMAILS` allowlist.
+
+#### 2. Data Aggregation Flow
+Once inside, the Dashboard acts as a central nervous system:
+- **Initialization**: `page.tsx` triggers parallel data fetches using Server Actions.
+- **Source 1 (Academy)**: Fetches user data via Firebase Admin SDK.
+- **Source 2 (Zestfolio)**: Connects to secondary firebase project via `zestfolio.ts` config.
+- **Normalization**: Data is merged, finding "Common Users" (registered on both) and calculating global ecosystem health.
+- **Visualization**: Data is piped into `AnalyticsCharts` and global counters.
+
 ## ⚙️ Quick Start
 
 ### 1. Install Dependencies
@@ -44,14 +106,13 @@ Create `.env.local`:
 ```env
 # Firebase Configuration
 NEXT_PUBLIC_FIREBASE_API_KEY=your_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+...
 
 # MFA Secret (from generate-mfa.js)
 NEXT_PUBLIC_MFA_SECRET=YOUR_GENERATED_SECRET
+
+# Authorized Hardware IDs
+NEXT_PUBLIC_HW_ID_1=your_machine_id
 ```
 
 ### 4. Run Development Server
@@ -63,18 +124,14 @@ Visit `http://localhost:3000/login`
 
 ## 🔐 Default Credentials (Demo Mode)
 
-- **Email**: `admin@sentinel.com`
+- **Email**: `admin@gmail.com`
 - **Password**: `password`
-- **Stealth Key**: `sentinel-alpha` (hover over gap between password and login button)
 - **MFA Code**: `123456` (or use real code from Google Authenticator)
 
 ## 🔧 Hardware Lock
 
-Your machine ID: `4c990fe24d101b9656c59070518151225dc11da4d4052436aa28bd3f5`
-
-To update for a new machine:
-1. Run `npx node-machine-id`
-2. Update `lib/security/config.ts` with the new ID
+1. Run `node scripts/get-hardware-id.js` (or `npx node-machine-id`)
+2. Add the ID to `.env.local` as `NEXT_PUBLIC_HW_ID_1`
 
 ## 🎨 Tech Stack
 

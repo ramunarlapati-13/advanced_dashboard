@@ -152,3 +152,30 @@ export async function getCollections() {
         return { success: false, error: error.message };
     }
 }
+// ------------------------------------------------------------------
+// ACTION: GET COLLECTION COUNT
+// ------------------------------------------------------------------
+export async function getCollectionCount(collectionName: string, project: string = 'academy') {
+    try {
+        let db;
+        if (project === 'zestfolio') {
+            const { initZestfolioAdmin } = await import("@/lib/firebase/admin");
+            const { getFirestore } = await import("firebase-admin/firestore");
+
+            const app = initZestfolioAdmin();
+            if (!app) throw new Error("ZESTFOLIO_ADMIN_NOT_CONFIGURED");
+            db = getFirestore(app);
+        } else {
+            const { initAdmin } = await import("@/lib/firebase/admin");
+            const { getFirestore } = await import("firebase-admin/firestore");
+            initAdmin();
+            db = getFirestore();
+        }
+
+        const snapshot = await db.collection(collectionName).count().get();
+        return { success: true, count: snapshot.data().count };
+    } catch (error: any) {
+        console.error(`Failed to fetch count for (${collectionName}):`, error);
+        return { success: false, error: error.message };
+    }
+}
