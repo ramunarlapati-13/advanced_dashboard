@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { Download } from "lucide-react";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -212,17 +213,88 @@ export default function AnalyticsCharts({
         ],
     };
 
+    const downloadDashboard = async () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Set dimensions for a high-quality export
+        canvas.width = 1600;
+        canvas.height = 1200;
+
+        // Draw Background
+        ctx.fillStyle = '#0a0a0a'; // Dark theme background
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Header
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 40px sans-serif';
+        ctx.fillText('Zest Intelligence Report', 50, 80);
+
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '24px sans-serif';
+        ctx.fillText(`Generated: ${new Date().toLocaleString()}`, 50, 120);
+
+        // Utility to load images
+        const loadImage = (url: string) => {
+            return new Promise<HTMLImageElement>((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.src = url;
+            });
+        };
+
+        try {
+            if (lineChartRef.current && pieChartRef.current && barChartRef.current) {
+                const lineImg = await loadImage(lineChartRef.current.toBase64Image());
+                const pieImg = await loadImage(pieChartRef.current.toBase64Image());
+                const barImg = await loadImage(barChartRef.current.toBase64Image());
+
+                // Draw Line Chart (Top)
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 24px sans-serif';
+                ctx.fillText('Growth Analytics (Line Chart)', 50, 150);
+                ctx.drawImage(lineImg, 50, 160, 1500, 500);
+
+                // Draw Pie Chart (Bottom Left)
+                ctx.fillText('User Distribution (Pie Chart)', 50, 690);
+                ctx.drawImage(pieImg, 50, 700, 700, 450);
+
+                // Draw Bar Chart (Bottom Right)
+                ctx.fillText('Comparative Volume (Bar Chart)', 800, 690);
+                ctx.drawImage(barImg, 800, 700, 750, 450);
+
+                // Trigger Download
+                const link = document.createElement('a');
+                link.download = `zest-full-report-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+        } catch (error) {
+            console.error("Failed to generate report:", error);
+        }
+    };
+
     return (
         <div className="flex flex-col gap-8">
+            <div className="flex justify-end">
+                <button
+                    onClick={downloadDashboard}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-all shadow-lg hover:shadow-purple-500/20"
+                >
+                    <Download size={16} /> DOWNLOAD FULL REPORT
+                </button>
+            </div>
+
             {/* Main Line Chart */}
             <div className="w-full relative group">
                 <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-gray-400 text-xs uppercase">Growth Trend</h4>
+                    <h4 className="text-gray-400 text-xs uppercase">Growth Analytics (Line Chart)</h4>
                     <button
-                        onClick={() => downloadChart(lineChartRef, 'growth-trend')}
-                        className="text-xs text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => downloadChart(lineChartRef, 'zest-growth-analytics-line-chart')}
+                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
                     >
-                        Export as PNG
+                        Export <Download size={14} />
                     </button>
                 </div>
                 <div className="h-80">
@@ -235,12 +307,12 @@ export default function AnalyticsCharts({
                 {/* Pie Chart */}
                 <div className="w-full p-4 border border-white/5 rounded-lg bg-black/20 relative group">
                     <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-gray-400 text-xs uppercase">User Distribution</h4>
+                        <h4 className="text-gray-400 text-xs uppercase">User Distribution (Pie Chart)</h4>
                         <button
-                            onClick={() => downloadChart(pieChartRef, 'user-distribution')}
-                            className="text-xs text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => downloadChart(pieChartRef, 'zest-user-distribution-pie-chart')}
+                            className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
                         >
-                            Export
+                            Export <Download size={14} />
                         </button>
                     </div>
                     <div className="h-64 flex justify-center pb-2">
@@ -251,12 +323,12 @@ export default function AnalyticsCharts({
                 {/* Bar Chart */}
                 <div className="w-full p-4 border border-white/5 rounded-lg bg-black/20 relative group">
                     <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-gray-400 text-xs uppercase">Comparitive Volume</h4>
+                        <h4 className="text-gray-400 text-xs uppercase">Comparative Volume (Bar Chart)</h4>
                         <button
-                            onClick={() => downloadChart(barChartRef, 'comparitive-volume')}
-                            className="text-xs text-blue-400 hover:text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => downloadChart(barChartRef, 'zest-comparative-volume-bar-chart')}
+                            className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
                         >
-                            Export
+                            Export <Download size={14} />
                         </button>
                     </div>
                     <div className="h-64">

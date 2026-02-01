@@ -155,7 +155,16 @@ export default function Dashboard() {
               color="orange"
               onClick={() => setActiveView('common')}
             />
-            <StatCard label="Total Databases" value="2" color="purple" />
+            <StatCard
+              label="Total Databases"
+              value="2"
+              color="purple"
+              onClick={() => {
+                setActiveView('database');
+                setIsSidebarOpen(true);
+                setIsDatabaseExpanded(true);
+              }}
+            />
             <StatCard label="Integration Status" value="ACTIVE" color="blue" />
           </div>
 
