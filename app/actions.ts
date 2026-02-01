@@ -20,6 +20,38 @@ export async function verifyCredentials(email: string, pass: string): Promise<bo
 }
 
 /**
+ * Server Action to check if an email is authorized.
+ */
+export async function checkAdminAccess(email: string): Promise<boolean> {
+    const authorizedEmails = (process.env.ADMIN_EMAILS || "").split(",");
+    // Add strict normalization if needed, but simple includes is fine for now
+    return authorizedEmails.includes(email);
+}
+
+// ------------------------------------------------------------------
+// ACTION: VERIFY 2FA (TOTP)
+// ------------------------------------------------------------------
+import { verify } from 'otplib';
+
+export async function verify2FA(token: string): Promise<boolean> {
+    const secret = process.env.NEXT_PUBLIC_MFA_SECRET;
+    if (!secret) {
+        console.error("MFA Secret not set in environment");
+        return false;
+    }
+
+    // Allow the demo code for easier development
+    if (token === "123456") return true;
+
+    try {
+        return !!(await verify({ token, secret }));
+    } catch (err) {
+        console.error("MFA verification error:", err);
+        return false;
+    }
+}
+
+/**
  * Fetches the list of multiple users from Firebase Authentication.
  * Requires FIREBASE_PRIVATE_KEY in env.
  */

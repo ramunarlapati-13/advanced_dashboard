@@ -14,7 +14,8 @@ import clsx from "clsx";
 import { collection, getDocs } from "firebase/firestore";
 import { db, rtdb } from "@/lib/firebase/config";
 import { ref, get } from "firebase/database";
-// import { auth } from "@/lib/firebase/config";
+import { auth } from "@/lib/firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -36,25 +37,12 @@ export default function Dashboard() {
 
   // Monitor Auth State
   useEffect(() => {
-    // Dynamic import to avoid SSR issues with Auth
-    import("firebase/auth").then(({ getAuth, onAuthStateChanged }) => {
-      // We need 'app' instance if not using the default singleton, 
-      // but typically getAuth() works if initialized.
-      // However, to be safe let's import the specific auth instance from config if possible,
-      // OR just use getAuth(app) if we import app. 
-      // Let's rely on our config file's auth export if we can, or just standard SDK.
-      import("@/lib/firebase/config").then(({ default: app }) => {
-        const auth = getAuth(app);
-        const unsubscribe = onAuthStateChanged(auth, (u) => {
-          setUser(u);
-          setAuthLoading(false);
-        });
-        return () => unsubscribe();
-      });
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setAuthLoading(false);
     });
-  }, [])
-
-    ;
+    return () => unsubscribe();
+  }, []);
 
   // Fetch Combined User Count from Both Databases
   useEffect(() => {
@@ -96,9 +84,7 @@ export default function Dashboard() {
 
   const handleLogin = async () => {
     try {
-      const { getAuth, GoogleAuthProvider, signInWithPopup } = await import("firebase/auth");
-      const { default: app } = await import("@/lib/firebase/config");
-      const auth = getAuth(app);
+      const { GoogleAuthProvider, signInWithPopup } = await import("firebase/auth");
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (e) {
@@ -108,9 +94,7 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    const { getAuth } = await import("firebase/auth");
-    const { default: app } = await import("@/lib/firebase/config");
-    await getAuth(app).signOut();
+    await auth.signOut();
   };
 
   // Redirect if not authenticated (Side Effect)

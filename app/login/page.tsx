@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Shield, ChevronRight, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import clsx from "clsx";
-// import { signInWithEmailAndPassword } from "firebase/auth"; // Uncomment when Firebase is ready
-// import { auth } from "@/lib/firebase/config";
+import { auth } from "@/lib/firebase/config";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 // Mock Credentials for Development/Demo (Remove in Prod)
 const MOCK_STEALTH_KEY = "sentinel-alpha"; // The secret key
@@ -81,29 +81,53 @@ export default function LoginPage() {
 
         try {
             // 1. Verify TOTP (Simulated or Real)
-            if (mfaCode !== "123456") {
-                // In prod: verify against API
+            // 1. Verify TOTP (Simulated or Real)
+            const { verify2FA } = await import("../actions");
+            const isMfaValid = await verify2FA(mfaCode);
+
+            if (!isMfaValid) {
                 throw new Error("Invalid TOTP Code");
             }
 
             // 2. Firebase Authentication (The "Key" to the Database)
             // Now we trigger the actual Firebase Login to get the token
-            const { getAuth, GoogleAuthProvider, signInWithPopup } = await import("firebase/auth");
-            const { default: app } = await import("@/lib/firebase/config");
-            const auth = getAuth(app);
             const provider = new GoogleAuthProvider();
 
             // We explicitly ask for login now that they passed the gates
-            await signInWithPopup(auth, provider);
+            const result = await signInWithPopup(auth, provider);
+            console.log("Authenticated User:", result.user.email);
 
-            // 3. Set Session & Redirect
+            // 3. Authorization Check (Gate 5 - Post-Auth)
+            if (result.user.email) {
+                const { checkAdminAccess } = await import("@/app/actions");
+                const isAuthorized = await checkAdminAccess(result.user.email);
+
+                if (!isAuthorized) {
+                    await auth.signOut();
+                    throw new Error(`ACCESS DENIED: Account '${result.user.email}' is not valid for Admin Access.`);
+                }
+            }
+
+            // 4. Set Session & Redirect
             if (typeof window !== 'undefined') {
                 sessionStorage.setItem("admin_session", "active");
             }
             router.push("/");
         } catch (err: any) {
-            console.error(err);
-            setError(err.message || "Authentication Failed");
+            console.error("Auth Error Details:", err);
+            let errorMessage = "Authentication Failed";
+
+            if (err.code === "auth/popup-blocked") {
+                errorMessage = "Popup blocked by browser. Please allow popups for this site.";
+            } else if (err.code === "auth/operation-not-allowed") {
+                errorMessage = "Google sign-in is not enabled in Firebase Console.";
+            } else if (err.code === "auth/unauthorized-domain") {
+                errorMessage = "This domain is not authorized for Google sign-in.";
+            } else {
+                errorMessage = err.message || "Authentication Failed";
+            }
+
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

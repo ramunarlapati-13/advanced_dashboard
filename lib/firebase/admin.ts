@@ -13,7 +13,7 @@ const academyServiceAccount = {
 
 // 2. Zestfolio Credentials (Optional)
 const zestfolioServiceAccount = {
-    projectId: "zestfolio-247",
+    projectId: process.env.NEXT_PUBLIC_ZESTFOLIO_PROJECT_ID,
     clientEmail: process.env.ZESTFOLIO_CLIENT_EMAIL,
     privateKey: process.env.ZESTFOLIO_PRIVATE_KEY?.replace(/\\n/g, "\n"),
 };
