@@ -8,17 +8,16 @@ To enable mobile reports:
 2.  **Get Token**: Copy the HTTP API Token he gives you.
 3.  **Configure Env**: Add `TELEGRAM_BOT_TOKEN=your_token_here` to `.env.local`.
 4.  **Set Webhook**: 
-    - Deploy your project (must be HTTPS).
-    - Run: `curl -F "url=https://your-domain.com/api/telegram/webhook" https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook`
+    - Deploy your project (must be HTTPS Vercel URL).
+    - Run: `curl -F "url=https://your-domain.vercel.app/api/telegram/webhook" https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook`
 5.  **Usage**: Send `/report` to your bot to get instant analytics.
 
 ## 🛡️ Security Features
 
-### Four-Gate Authentication System
+### Three-Gate Authentication System
 1. **Primary Gate**: Firebase Email/Password Authentication
 2. **Hardware Gate**: Machine ID verification (Server-side)
-3. **Stealth Gate**: Hidden security key input
-4. **MFA Gate**: Google Authenticator TOTP
+3. **MFA Gate**: Google Authenticator TOTP
 
 ## 🚀 Key Innovation: Multi-Platform Intelligence
 
